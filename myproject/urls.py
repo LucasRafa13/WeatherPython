@@ -1,12 +1,13 @@
 # myproject/urls.py
 from django.contrib import admin
 from django.urls import path, include
-from myproject.views import home_view  # Importe a home_view (que agora é o formulário)
+from . import views  # Importa as views do seu myproject/views.py
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("api.urls")),  # A rota /api/ para a API REST (GET e POST)
+    path("", views.home_view, name="home"),  # Rota raiz para o formulário
     path(
-        "", home_view, name="home"
-    ),  # A rota raiz agora mostra o formulário de ingestão
+        "query-weather/", views.query_weather_data, name="query_weather"
+    ),  # <-- ESTA ROTA É CRUCIAL
+    path("api/", include("api.urls")),  # Inclui as URLs do seu app 'api'
 ]
