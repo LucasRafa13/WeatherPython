@@ -1,100 +1,352 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Consulta de Clima por Evento</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Light blue-gray background */
-        }
-        /* Estilos para mensagem de erro */
-        .bg-red-100 { background-color: #fee2e2; }
-        .border-red-200 { border-color: #fecaca; }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f0f4f8; /* Light blue-gray background */
+      }
+      /* Estilos para mensagens */
+      .message-box {
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+      }
+      .message-box.success {
+        color: #0f5132;
+        background-color: #d1e7dd;
+        border-color: #badbcc;
+      }
+      .message-box.error {
+        color: #842029;
+        background-color: #f8d7da;
+        border-color: #f5c2c7;
+      }
+      .message-box.info {
+        color: #0c5460;
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+      }
     </style>
-</head>
-<body class="flex items-center justify-center min-h-screen p-4">
+  </head>
+  <body class="flex items-center justify-center min-h-screen p-4">
     <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Consulta de Clima por Evento</h1>
-        
-        <p class="text-gray-600 mb-6 text-center">
-            Insira a cidade e a data do evento para consultar os dados climáticos.
-            <br>
-            <strong class="text-red-600">Atenção:</strong> Os dados serão ingeridos (se não existirem) e exibidos.
-        </p>
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+        Consulta de Clima por Evento
+      </h1>
 
-        <form action="/query-weather/" method="GET" class="space-y-4">
-            <div>
-                <label for="city" class="block text-sm font-medium text-gray-700 mb-1">Cidade:</label>
-                <input type="text" id="city" name="city" required placeholder="Ex: São Paulo"
-                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            </div>
-            <div>
-                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Data (AAAA-MM-DD):</label>
-                <input type="date" id="date" name="date" required
-                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            </div>
-            <button type="submit"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                Consultar Clima
-            </button>
-        </form>
+      <p class="text-gray-600 mb-6 text-center">
+        Insira os detalhes do evento e a cidade/data para consultar os dados
+        climáticos.
+        <br />
+        <strong class="text-blue-600">Nota:</strong> Os dados serão buscados da
+        API externa e exibidos. Pode optar por salvá-los no DB.
+      </p>
 
-        <div id="results" class="mt-8 p-4 bg-gray-100 rounded-md border border-gray-200 hidden">
-            <h2 class="text-xl font-semibold text-gray-800 mb-3">Resultados da Consulta:</h2>
-            <pre class="bg-gray-200 p-3 rounded-md text-sm text-gray-700 overflow-x-auto" id="json-output"></pre>
+      <div id="global-message" class="message-box hidden" role="alert"></div>
+
+      <form
+        id="weather-form"
+        action="/query-weather/"
+        method="GET"
+        class="space-y-4"
+      >
+        <div>
+          <label
+            for="event_name"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            >Nome do Evento:</label
+          >
+          <input
+            type="text"
+            id="event_name"
+            name="event_name"
+            required
+            placeholder="Ex: Show do Eduardo Costa"
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
         </div>
+        <div>
+          <label for="city" class="block text-sm font-medium text-gray-700 mb-1"
+            >Cidade:</label
+          >
+          <input
+            type="text"
+            id="city"
+            name="city"
+            required
+            placeholder="Ex: São Paulo"
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label for="date" class="block text-sm font-medium text-gray-700 mb-1"
+            >Data (AAAA-MM-DD):</label
+          >
+          <input
+            type="date"
+            id="date"
+            name="date"
+            required
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+        <button
+          type="submit"
+          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+        >
+          Consultar Clima
+        </button>
+      </form>
 
-        <p class="text-center text-sm text-gray-500 mt-6">
-            Acesse o <a href="/admin/" class="text-blue-600 hover:underline">Painel de Administração</a>
-        </p>
+      <div
+        id="results"
+        class="mt-8 p-4 bg-gray-100 rounded-md border border-gray-200 hidden"
+      >
+        <h2 class="text-xl font-semibold text-gray-800 mb-3">
+          Resultados da Consulta:
+        </h2>
+        <pre
+          class="bg-gray-200 p-3 rounded-md text-sm text-gray-700 overflow-x-auto"
+          id="json-output"
+        ></pre>
+
+        <button
+          id="save-to-db-button"
+          class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150 ease-in-out hidden"
+        >
+          Salvar Consulta no Banco de Dados
+        </button>
+
+        <!-- O botão "Gerar Lista de Bagagem (via Gemini)" e a sua div de saída foram removidos daqui -->
+      </div>
+
+      <p class="text-center text-sm text-gray-500 mt-6">
+        Acesse o
+        <a href="/admin/" class="text-blue-600 hover:underline"
+          >Painel de Administração</a
+        >
+      </p>
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const resultParam = urlParams.get('result');
+      const weatherForm = document.getElementById('weather-form')
+      const jsonOutput = document.getElementById('json-output')
+      const resultsDiv = document.getElementById('results')
+      const globalMessageDiv = document.getElementById('global-message')
+      const saveToDbButton = document.getElementById('save-to-db-button')
+      // generateLuggageListButton e elementos relacionados à bagagem foram removidos
+      // const generateLuggageListButton = document.getElementById('generate-luggage-list');
+      // const luggageListOutputDiv = document.getElementById('luggage-list-output');
+      // const luggageText = document.getElementById('luggage-text');
+      // const loadingIndicator = document.getElementById('loading-indicator');
+
+      let fetchedWeatherData = null // Armazenará os dados do clima e evento para salvar
+
+      // Função para exibir mensagens globais
+      function showMessage(message, type) {
+        globalMessageDiv.textContent = message
+        globalMessageDiv.className = `message-box ${type}`
+        globalMessageDiv.classList.remove('hidden')
+      }
+
+      // Função para esconder a caixa de resultados e botões
+      function hideResultsAndButtons() {
+        resultsDiv.classList.add('hidden')
+        saveToDbButton.classList.add('hidden')
+        // generateLuggageListButton.classList.add('hidden'); // Removido
+        // luggageListOutputDiv.classList.add('hidden'); // Removido
+        globalMessageDiv.classList.add('hidden')
+      }
+
+      // --- Lógica de Submissão do Formulário (AJAX) ---
+      weatherForm.addEventListener('submit', async (event) => {
+        event.preventDefault() // Impede o envio tradicional do formulário
+
+        hideResultsAndButtons() // Esconde resultados anteriores e mensagens
+        jsonOutput.textContent = 'A consultar dados...'
+        resultsDiv.classList.remove('hidden') // Mostra a caixa de resultados para o "A consultar dados..."
+
+        const formData = new FormData(weatherForm)
+        const queryParams = new URLSearchParams(formData).toString()
+        const url = `/query-weather/?${queryParams}`
+
+        try {
+          const response = await fetch(url)
+          const result = await response.json()
+
+          if (response.ok) {
+            // Status 2xx
+            if (result.data) {
+              fetchedWeatherData = result.data // Armazena os dados recebidos
+              jsonOutput.textContent = JSON.stringify(
+                fetchedWeatherData,
+                null,
+                2,
+              )
+
+              // Mostra o botão de salvar se for um novo dado
+              if (fetchedWeatherData.status === 'existing') {
+                showMessage('Dados existentes foram carregados.', 'success')
+                saveToDbButton.classList.add('hidden') // Não mostra o botão de salvar se já existe
+              } else {
+                showMessage(
+                  'Novos dados consultados. Pode salvá-los no DB.',
+                  'success',
+                )
+                saveToDbButton.classList.remove('hidden') // Mostra o botão de salvar para novos dados
+              }
+            } else if (result.error) {
+              jsonOutput.textContent = `Erro: ${result.error}`
+              resultsDiv.classList.add('bg-red-100', 'border-red-200')
+              resultsDiv.classList.remove('bg-gray-100', 'border-gray-200')
+              showMessage(`Erro na consulta: ${result.error}`, 'error')
+            }
+          } else {
+            // Status de erro (4xx, 5xx)
+            const errorMessage =
+              result.error || 'Erro desconhecido na consulta.'
+            jsonOutput.textContent = `Erro: ${errorMessage}`
+            resultsDiv.classList.add('bg-red-100', 'border-red-200')
+            resultsDiv.classList.remove('bg-gray-100', 'border-gray-200')
+            showMessage(`Erro na consulta: ${errorMessage}`, 'error')
+          }
+        } catch (error) {
+          console.error('Erro na requisição:', error)
+          jsonOutput.textContent = 'Erro de rede ou na requisição.'
+          resultsDiv.classList.add('bg-red-100', 'border-red-200')
+          resultsDiv.classList.remove('bg-gray-100', 'border-gray-200')
+          showMessage('Erro de conexão. Verifique o servidor.', 'error')
+        }
+      })
+
+      // --- Lógica para Salvar no Banco de Dados ---
+      saveToDbButton.addEventListener('click', async () => {
+        if (!fetchedWeatherData) {
+          showMessage(
+            'Nenhum dado para salvar. Por favor, consulte o clima primeiro.',
+            'error',
+          )
+          return
+        }
+
+        showMessage('A salvar dados no banco de dados...', 'info')
+        saveToDbButton.disabled = true // Desabilita o botão para evitar múltiplos cliques
+
+        try {
+          const response = await fetch('/save-weather-data/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken'), // Django CSRF token
+            },
+            body: JSON.stringify(fetchedWeatherData), // Envia os dados completos
+          })
+
+          const result = await response.json()
+
+          if (response.ok) {
+            showMessage(
+              result.message || 'Dados salvos com sucesso!',
+              'success',
+            )
+            saveToDbButton.classList.add('hidden') // Esconde o botão após salvar
+          } else {
+            showMessage(result.error || 'Erro ao salvar dados.', 'error')
+          }
+        } catch (error) {
+          console.error('Erro ao salvar dados:', error)
+          showMessage('Erro de rede ao tentar salvar dados.', 'error')
+        } finally {
+          saveToDbButton.disabled = false // Reabilita o botão em caso de falha
+        }
+      })
+
+      // A lógica para Gerar Lista de Bagagem (Gemini API) foi removida.
+      // generateLuggageListButton.addEventListener('click', async () => { ... });
+
+      // Função auxiliar para obter o CSRF token do cookie (necessário para requisições POST no Django)
+      function getCookie(name) {
+        let cookieValue = null
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';')
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim()
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === name + '=') {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1),
+              )
+              break
+            }
+          }
+        }
+        return cookieValue
+      }
+
+      // Lógica para lidar com resultados de redirecionamento na URL (ao carregar a página)
+      window.addEventListener('load', () => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const resultParam = urlParams.get('result')
 
         if (resultParam) {
-            try {
-                let displayContent = '';
-                let isError = false;
+          try {
+            let displayContent = ''
+            let isError = false
+            let parsedResult = null
 
-                if (resultParam.startsWith('data=')) {
-                    const jsonDataEncoded = resultParam.substring(5);
-                    const jsonData = decodeURIComponent(jsonDataEncoded);
-                    const parsedJson = JSON.parse(jsonData);
-                    displayContent = JSON.stringify(parsedJson, null, 2);
-                } 
-                else if (resultParam.startsWith('error=')) {
-                    const errorMessageEncoded = resultParam.substring(6);
-                    displayContent = `Erro: ${decodeURIComponent(errorMessageEncoded)}`;
-                    isError = true;
-                } else {
-                    displayContent = 'Formato de resultado inesperado na URL.';
-                    isError = true;
-                }
-
-                document.getElementById('json-output').textContent = displayContent;
-                document.getElementById('results').classList.remove('hidden');
-                
-                if (isError) {
-                    document.getElementById('results').classList.add('bg-red-100', 'border-red-200');
-                    document.getElementById('results').classList.remove('bg-gray-100', 'border-gray-200');
-                } else {
-                    document.getElementById('results').classList.add('bg-gray-100', 'border-gray-200');
-                    document.getElementById('results').classList.remove('bg-red-100', 'border-red-200');
-                }
-
-            } catch (e) {
-                document.getElementById('json-output').textContent = 'Erro interno ao processar o resultado da URL: ' + e.message;
-                document.getElementById('results').classList.remove('hidden');
-                document.getElementById('results').classList.add('bg-red-100', 'border-red-200');
-                document.getElementById('results').classList.remove('bg-gray-100', 'border-gray-200');
+            if (resultParam.startsWith('data=')) {
+              const jsonDataEncoded = resultParam.substring(5)
+              const jsonData = decodeURIComponent(jsonDataEncoded)
+              parsedResult = JSON.parse(jsonData)
+              displayContent = JSON.stringify(parsedResult, null, 2)
+              fetchedWeatherData = parsedResult // Preenche para uso futuro
+              saveToDbButton.classList.remove('hidden') // Assume que precisa salvar se veio via redirect com dados
+            } else if (resultParam.startsWith('error=')) {
+              const errorMessageEncoded = resultParam.substring(6)
+              displayContent = `Erro: ${decodeURIComponent(
+                errorMessageEncoded,
+              )}`
+              isError = true
+            } else {
+              displayContent = 'Formato de resultado inesperado na URL.'
+              isError = true
             }
+
+            jsonOutput.textContent = displayContent
+            resultsDiv.classList.remove('hidden')
+
+            if (isError) {
+              resultsDiv.classList.add('bg-red-100', 'border-red-200')
+              resultsDiv.classList.remove('bg-gray-100', 'border-gray-200')
+              showMessage(displayContent, 'error')
+            } else {
+              resultsDiv.classList.add('bg-gray-100', 'border-gray-200')
+              resultsDiv.classList.remove('bg-red-100', 'border-red-200')
+              // Se não for erro, a mensagem de sucesso já foi tratada ou não é necessária aqui
+            }
+          } catch (e) {
+            jsonOutput.textContent =
+              'Erro interno ao processar o resultado da URL: ' + e.message
+            resultsDiv.classList.remove('hidden')
+            resultsDiv.classList.add('bg-red-100', 'border-red-200')
+            resultsDiv.classList.remove('bg-gray-100', 'border-gray-200')
+            showMessage(
+              'Erro interno ao processar o resultado da URL.',
+              'error',
+            )
+          }
         }
+      })
     </script>
-</body>
+  </body>
 </html>
