@@ -159,7 +159,7 @@ def save_weather_data(request):
 
             return JsonResponse(
                 {
-                    "message": "Dados salvos com sucesso! Acesse /api para vizualização",
+                    "message": "Dados salvos com sucesso! Acesse api/weather-records para vizualização",
                     "event_id": event_id,
                 },
                 status=201,

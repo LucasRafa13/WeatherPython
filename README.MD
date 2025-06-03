@@ -1,19 +1,17 @@
-# 🗂️ Projeto Sympla Events Manager
+# 🌦️ Projeto Weather Records Manager
 
-Este projeto é uma aplicação Django que interage com a [API da Sympla](https://developers.sympla.com.br/api-doc/) para importar, armazenar e expor eventos via REST. Ele utiliza Docker e Docker Compose para facilitar o desenvolvimento e implantação.
+Este projeto é uma aplicação Django que consome dados da [WeatherAPI](https://www.weatherapi.com/) e os armazena em banco de dados. Ele expõe endpoints para cadastro e listagem de registros meteorológicos. O projeto é totalmente dockerizado para facilitar o uso local e em produção.
 
 ---
 
 ## 🚀 Começando
-
-Siga os passos abaixo para rodar o projeto localmente.
 
 ### ✅ Pré-requisitos
 
 Certifique-se de ter as seguintes ferramentas instaladas:
 
 - [Docker](https://docs.docker.com/get-docker/)
-- Docker Compose (já incluso no Docker Desktop)
+- Docker Compose
 - [Git](https://git-scm.com/)
 
 ---
@@ -21,52 +19,52 @@ Certifique-se de ter as seguintes ferramentas instaladas:
 ## 📦 Clonando o Repositório
 
 ```bash
-git clone https://github.com/LucasRafa13/SymplaPython
-cd sympla-python
+git clone https://github.com/seu-usuario/weatherapi-python.git
+cd weatherapi-python
 ```
 
 ---
 
 ## ⚙️ Configuração do Ambiente
 
-Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo ou descomente o .env.example e renomeie para .env:
+Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
 
 ```env
-# Variáveis para o banco de dados PostgreSQL
-POSTGRES_DB=sympla
-POSTGRES_USER=sympla
-POSTGRES_PASSWORD=sympla
+# Variáveis do banco de dados PostgreSQL
+POSTGRES_DB=weather
+POSTGRES_USER=weather_user
+POSTGRES_PASSWORD=weather_pass
 
-# Variáveis para a conexão do Django com o PostgreSQL (referenciam as do banco)
-DATABASE_NAME=sympla
-DATABASE_USER=sympla
-DATABASE_PASSWORD=sympla
-DATABASE_HOST=db  # O nome do serviço do banco de dados no docker-compose
+# Configuração do Django
+DATABASE_NAME=weather
+DATABASE_USER=weather_user
+DATABASE_PASSWORD=weather_pass
+DATABASE_HOST=db
 DATABASE_PORT=5432
 
-# Token da API Sympla
-SYMPLA_TOKEN=seu_token_aqui
+# Chave da API WeatherAPI
+WEATHER_API_KEY=sua_chave_aqui
 ```
 
-⚠️ **Importante:** o `.env` contém informações sensíveis e não deve ser versionado. Ele já está incluso no `.gitignore`.
+⚠️ **Importante:** o arquivo `.env` contém dados sensíveis e já está listado no `.gitignore`.
 
 ---
 
 ## 🐳 Executando com Docker Compose
 
-### 1. Construir e iniciar os containers
+### 1. Suba os containers
 
 ```bash
 docker compose up --build -d
 ```
 
-### 2. Aplicar migrações do banco de dados
+### 2. Aplique as migrações
 
 ```bash
 docker compose exec web python manage.py migrate
 ```
 
-### 3. Criar superusuário Django
+### 3. Crie um superusuário
 
 ```bash
 docker compose exec web python manage.py createsuperuser
@@ -74,17 +72,16 @@ docker compose exec web python manage.py createsuperuser
 
 ---
 
-## 🌐 Acessos
+## 🌐 Endpoints Disponíveis
 
-- Aplicação: http://localhost:8000/
-- Admin Django: http://localhost:8000/admin/
-- API de eventos: http://localhost:8000/api/events/
+- Cadastro manual: [http://localhost:8000/](http://localhost:8000/)
+- Listar dados meteorológicos: [http://localhost:8000/api/weather-records/](http://localhost:8000/api/weather-records/)
 
 ---
 
-## 🔁 Desenvolvimento com hot reload
+## 🔁 Desenvolvimento com Hot Reload
 
-O serviço web está configurado para recarregar automaticamente ao salvar arquivos Python:
+Para ver os logs em tempo real:
 
 ```bash
 docker compose logs -f web
@@ -94,13 +91,15 @@ docker compose logs -f web
 
 ## 🧹 Limpeza
 
-Para parar e remover os containers, redes e volumes:
+Para remover containers e volumes criados:
 
 ```bash
 docker compose down -v
 ```
 
 ---
+
 ## 📄 Autor
 
-Este projeto foi inteiramente desenvolvido por [Lucas R A Lima](https://github.com/LucasRafa13)
+
+Este Foi desenvolvido por [https://github.com/LucasRafa13](https://github.com/LucasRafa13)
