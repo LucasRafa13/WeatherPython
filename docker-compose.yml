@@ -1,68 +1,51 @@
 services:
   db:
-    image: postgres:16.2-alpine # Imagem oficial do PostgreSQL. 'alpine' é uma versão leve.
+    image: postgres:16.2-alpine
     volumes:
-      # Volume persistente para os dados do banco de dados.
+      # Mantém os dados do PostgreSQL persistentes.
       - postgres_data:/var/lib/postgresql/data
-      # Executa o script SQL na primeira inicialização.
-      # Certifique-se de que 'init_db.sql' está na raiz do seu projeto.
+      # Executa um script SQL na inicialização do banco para criar esquemas ou dados iniciais.
       - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
     environment:
-      POSTGRES_DB: ${POSTGRES_DB} # Nome do banco de dados (lido do .env)
-      POSTGRES_USER: ${POSTGRES_USER} # Usuário do banco de dados (lido do .env)
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # Senha do banco de dados (lido do .env)
+      # Variáveis de ambiente que o PostgreSQL usa para configurar o banco de dados inicial.
+      POSTGRES_DB: weather_db # <-- Nome do banco de dados atualizado
+      POSTGRES_USER: weather_user # <-- Usuário do banco de dados atualizado
+      POSTGRES_PASSWORD: weather_pass # <-- Senha do banco de dados atualizada
     ports:
-      - '5432:5432' # Mapeia a porta 5432 do contêiner para a porta 5432 na sua máquina local.
-    restart: always # Garante que o serviço será reiniciado automaticamente em caso de falha.
-    healthcheck: # Adiciona um healthcheck para o PostgreSQL
+      # Mapeia a porta 5432 do contêiner para a porta 5432 na sua máquina local.
+      - '5432:5432'
+    restart: always # Garante que o contêiner reinicie se parar.
+    healthcheck:
+      # Verifica se o banco de dados está pronto para aceitar conexões.
       test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
       interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 10s # Dê um tempo para o DB iniciar antes de verificar a saúde
+      start_period: 10s # Dá um tempo inicial para o banco subir.
 
-  app: # Nome do serviço da sua aplicação Django
+  app:
     build: . # Constrói a imagem Docker a partir do Dockerfile no diretório atual.
     ports:
-      - '8000:8000' # Mapeia a porta 8000 do contêiner (Django) para a porta 8000 na sua máquina local.
+      # Mapeia a porta 8000 do contêiner (onde o Django roda) para a porta 8000 na sua máquina local.
+      - '8000:8000'
     environment:
-      # Variáveis de ambiente para a aplicação Django se conectar ao banco de dados:
+      # Variáveis de ambiente para o Django se conectar ao PostgreSQL.
+      # Elas são carregadas a partir do seu arquivo .env via python-decouple.
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_HOST: db # O nome do serviço 'db' é o hostname dentro da rede Docker Compose.
-      POSTGRES_PORT: 5432 # A porta interna do contêiner PostgreSQL.
-
-      # É uma boa prática definir a URL do banco de dados para o Django
-      # Você pode usar 'django-environ' ou similar para parsear isso no settings.py
-      # ou configurar as variáveis separadas no settings.py diretamente.
-      # Exemplo de DATABASE_URL (se seu settings.py usar isso):
-      # DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
-
-      # Se o seu settings.py não usar DATABASE_URL, certifique-se de que ele lê as vars POSTGRES_* diretamente.
-      # Exemplo de settings.py para ler vars separadas:
-      # import os
-      # DATABASES = {
-      #     'default': {
-      #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-      #         'NAME': os.environ.get('POSTGRES_DB'),
-      #         'USER': os.environ.get('POSTGRES_USER'),
-      #         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-      #         'HOST': os.environ.get('POSTGRES_HOST'),
-      #         'PORT': os.environ.get('POSTGRES_PORT'),
-      #     }
-      # }
-
+      POSTGRES_HOST: db # 'db' é o nome do serviço do banco de dados no docker-compose.
+      POSTGRES_PORT: 5432
     depends_on:
+      # Garante que o serviço 'app' só inicie depois que 'db' estiver saudável.
       db:
-        condition: service_healthy # Garante que o serviço 'db' esteja marcado como SAUDÁVEL antes de 'app' iniciar.
-    restart: always # Garante que o serviço será reiniciado automaticamente em caso de falha.
+        condition: service_healthy
+    restart: always # Garante que o contêiner reinicie se parar.
     volumes:
-      # Monta o diretório atual do seu host (onde está o docker-compose.yml)
-      # no diretório /app do contêiner. Isso permite que você faça
-      # alterações no seu código localmente e elas se reflitam
-      # imediatamente no contêiner sem reconstruir a imagem.
+      # Monta o diretório do seu projeto local para /app dentro do contêiner.
+      # Isso permite que as alterações no seu código sejam refletidas sem reconstruir a imagem.
       - .:/app
 
-volumes: # Esta seção define os volumes nomeados e DEVE estar no nível raiz do docker-compose.yml
-  postgres_data: # Define o volume persistente para os dados do PostgreSQL.
+volumes:
+  # Define um volume nomeado para persistir os dados do PostgreSQL.
+  postgres_data:
