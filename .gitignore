@@ -1,0 +1,33 @@
+# Arquivos de sistema operacional
+.DS_Store
+.env
+.flaskenv
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+/htmlcov/
+.tox/
+.nox/
+.eggs/
+*.egg
+*.egg-info
+dist/
+build/
+*.mo
+*.pot
+*.log
+*.sqlite3
+.coverage
+.mypy_cache/
+.pytest_cache/
+.benchmarks/
+
+# Docker
+.dockerignore

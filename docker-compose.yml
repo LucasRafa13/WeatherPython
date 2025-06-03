@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:16.2-alpine # Imagem oficial do PostgreSQL. 'alpine' é uma versão leve.
+    volumes:
+      # Volume persistente para os dados do banco de dados.
+      - postgres_data:/var/lib/postgresql/data
+      # Executa o script SQL na primeira inicialização.
+      # Certifique-se de que 'init_db.sql' está na raiz do seu projeto.
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB} # Nome do banco de dados (lido do .env)
+      POSTGRES_USER: ${POSTGRES_USER} # Usuário do banco de dados (lido do .env)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # Senha do banco de dados (lido do .env)
+    ports:
+      - '5432:5432' # Mapeia a porta 5432 do contêiner para a porta 5432 na sua máquina local.
+    restart: always # Garante que o serviço será reiniciado automaticamente em caso de falha.
+    healthcheck: # Adiciona um healthcheck para o PostgreSQL
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s # Dê um tempo para o DB iniciar antes de verificar a saúde
+
+  app: # Nome do serviço da sua aplicação Django
+    build: . # Constrói a imagem Docker a partir do Dockerfile no diretório atual.
+    ports:
+      - '8000:8000' # Mapeia a porta 8000 do contêiner (Django) para a porta 8000 na sua máquina local.
+    environment:
+      # Variáveis de ambiente para a aplicação Django se conectar ao banco de dados:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db # O nome do serviço 'db' é o hostname dentro da rede Docker Compose.
+      POSTGRES_PORT: 5432 # A porta interna do contêiner PostgreSQL.
+
+      # É uma boa prática definir a URL do banco de dados para o Django
+      # Você pode usar 'django-environ' ou similar para parsear isso no settings.py
+      # ou configurar as variáveis separadas no settings.py diretamente.
+      # Exemplo de DATABASE_URL (se seu settings.py usar isso):
+      # DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+
+      # Se o seu settings.py não usar DATABASE_URL, certifique-se de que ele lê as vars POSTGRES_* diretamente.
+      # Exemplo de settings.py para ler vars separadas:
+      # import os
+      # DATABASES = {
+      #     'default': {
+      #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+      #         'NAME': os.environ.get('POSTGRES_DB'),
+      #         'USER': os.environ.get('POSTGRES_USER'),
+      #         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+      #         'HOST': os.environ.get('POSTGRES_HOST'),
+      #         'PORT': os.environ.get('POSTGRES_PORT'),
+      #     }
+      # }
+
+    depends_on:
+      db:
+        condition: service_healthy # Garante que o serviço 'db' esteja marcado como SAUDÁVEL antes de 'app' iniciar.
+    restart: always # Garante que o serviço será reiniciado automaticamente em caso de falha.
+    volumes:
+      # Monta o diretório atual do seu host (onde está o docker-compose.yml)
+      # no diretório /app do contêiner. Isso permite que você faça
+      # alterações no seu código localmente e elas se reflitam
+      # imediatamente no contêiner sem reconstruir a imagem.
+      - .:/app
+
+volumes: # Esta seção define os volumes nomeados e DEVE estar no nível raiz do docker-compose.yml
+  postgres_data: # Define o volume persistente para os dados do PostgreSQL.
