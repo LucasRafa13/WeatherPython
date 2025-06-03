@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "weather_data",
+    "api",  # Seu aplicativo de dados meteorológicos
     # Adicione suas apps aqui, por exemplo:
     # 'api',
     # 'events',
@@ -62,7 +64,7 @@ ROOT_URLCONF = "myproject.urls"  # Aponta para o seu urls.py
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "myproject" / "templates"],  # <-- Adicione esta linha
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
