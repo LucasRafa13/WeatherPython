@@ -19,7 +19,7 @@ Certifique-se de ter as seguintes ferramentas instaladas:
 ## 📦 Clonando o Repositório
 
 ```bash
-git clone https://github.com/seu-usuario/weatherapi-python.git
+git clone https://github.com/LucasRafa13/WeatherPython
 cd weatherapi-python
 ```
 
@@ -44,6 +44,8 @@ DATABASE_PORT=5432
 
 # Chave da API WeatherAPI
 WEATHER_API_KEY=sua_chave_aqui
+# Gere uma nova chave com: python -c "import os; print(os.urandom(32).hex())"
+SECRET_KEY=
 ```
 
 ⚠️ **Importante:** o arquivo `.env` contém dados sensíveis e já está listado no `.gitignore`.
